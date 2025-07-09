@@ -193,3 +193,10 @@ class RestaurantSuggestion(models.Model):
     def __str__(self):
         """Returns the restaurant's name"""
         return self.display_name
+    
+class Member(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    session = models.ForeignKey(Session, on_delete=models.CASCADE)
+    joined_at = models.DateTimeField(auto_now_add=True)
+    
+    REQUIRED_FIELDS = ["user", "session"]
