@@ -2,7 +2,8 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from .utils import generate_code
 
-CustomUser = get_user_model()
+User = get_user_model()
+
 
 class Session(models.Model):
     """
@@ -12,17 +13,16 @@ class Session(models.Model):
     """
 
     STAGE_CHOICES = {
-        "0": "Suggesting",
-        "1": "Banning",
-        "2": "Voting",
-        "3": "Results",
+        "0": "Lobby",
+        "1": "Suggesting",
+        "2": "Banning",
+        "3": "Voting",
+        "4": "Results",
     }
 
     join_code = models.CharField(max_length=6, unique=True, blank=True)
     date_created = models.DateTimeField(auto_now_add=True)
-    creator = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE, related_name="session"
-    )
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="session")
     stage = models.CharField(max_length=1, choices=STAGE_CHOICES)
 
     REQUIRED_FIELDS = ["creator"]
@@ -34,7 +34,7 @@ class Session(models.Model):
     def generate_unique_code(self):
         """Uses the generate_code function to generate a unique code"""
         code = generate_code()
-        while Session.objects.filter(code=code).exists():
+        while Session.objects.filter(join_code=code).exists():
             code = generate_code()
         return code
 
@@ -70,15 +70,17 @@ class RestaurantSuggestion(models.Model):
     def __str__(self):
         """Returns the restaurant's name"""
         return self.display_name
-    
+
+
 class Member(models.Model):
     """
     Members of a session are represented in this model
 
     The user the member represents and the session the member is in are required.
     """
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     session = models.ForeignKey(Session, on_delete=models.CASCADE)
     joined_at = models.DateTimeField(auto_now_add=True)
-    
+
     REQUIRED_FIELDS = ["user", "session"]
